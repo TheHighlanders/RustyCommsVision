@@ -2,11 +2,12 @@ import cv2
 import numpy as np
 
 
-cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
+#cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
+cap = cv2.VideoCapture(0)
 
 while (True):
 	ret, frame = cap.read()
-#	cv2.imshow('frame', frame)
+
 
 ## Pre-Processing to convert RGB image to a binary image
 
@@ -38,9 +39,7 @@ while (True):
 ## Display all contours found;
 
 	frameContours = np.copy(frame)
-	cv2.drawContours(frameContours, hsvContours, -1, (0,0,255), 4)
 
-	cv2.imshow("frameContours", frameContours)
 
 
 ## Filter contors for ones with resonable aspect ratios
@@ -49,6 +48,33 @@ while (True):
 ## * ratio of height to horizontal distance between the geometric center of each. 
 ## * Area of contour
 ## * distance from the center of field of each contour
+
+
+	possibleGearTargetContour = []
+	possibleGTCBR = []	
+# if the conour looks like a possible piece of target tape, add it to the list
+	for cnt in hsvContours:
+		x, y, w, h = cv2.boundingRect(cnt)
+		print (w/h)
+		if (w/h >= 1.5/5 and w/h <= 2.5/5):
+			possibleGearTargetContour.append(cnt)
+			possibleGTCBR.append([x,y,w,h])
+	cv2.drawContours(frameContours, possibleGearTargetContour, -1, (0,0,255), 4)
+	cv2.imshow("frameContours", frameContours)
+
+# for each contour check if there is another contour an appropiate distance away on the left or right
+
+	for cntA in possibleGTCBR:
+		for cntB in possibleGTCBR:
+			if cntA[3] * 2.2 >= (abs(cntA[0] - cntB[0])) and  cntA[3] * 1.8 <= (abs(cntA[0] - cntB[0])):
+				cv2.line(frame, (cntA[0], cntA[1]), (cntB[0],cntB[1]), (0,0,255), 3)
+				cv2.circle(frame, ((int)((cntA[0] + cntB[0])/ 2),(int)((cntA[1] + cntB[1])/ 2)), (10), (0,255,255), -1)
+
+	cv2.imshow('frame', frame)
+
+## Draw a line between the targets, and put a dot at the center
+## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
+## cv2.circle(img, (x,y), (radius), (0,255,255), thickness)
 
 
 
