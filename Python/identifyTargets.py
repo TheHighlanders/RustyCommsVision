@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
 
 while (True):
 	ret, frame = cap.read()
@@ -16,24 +16,24 @@ while (True):
 	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 	
 ## update these for the green color of our LED
-	lower_blue = np.array([87,0,0])
-	upper_blue = np.array([151,255,255])
+	lower_green = np.array([0,0,156])
+	upper_green = np.array([120,209,255])
 
-	hsvMask = cv2.inRange(hsv, lower_blue, upper_blue)
+	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
 	cv2.imshow('mask', hsvMask)
 	
-	kernel = np.ones((15,15), np.uint8)
+	kernel = np.ones((5,5), np.uint8)
 	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
 	cv2.imshow('removenoise', maskRemoveNoise)
 
 	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
 	cv2.imshow('closeHoles', maskCloseHoles)
 
-	maskBlur = cv2.GaussianBlur(maskCloseHoles, (15,15),1)
-	cv2.imshow('maskBlur', maskBlur)
+#	maskBlur = cv2.GaussianBlur(maskCloseHoles, (15,15),1)
+#	cv2.imshow('maskBlur', maskBlur)
 ## get contours for more abstract analysis
 
-	c1, hsvContours, _ = cv2.findContours(maskBlur, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	c1, hsvContours, _ = cv2.findContours(maskCloseHoles, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 ## Display all contours found;
 
