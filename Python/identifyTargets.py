@@ -30,8 +30,8 @@ def correctSpacing(cntA, cntB):
 	#print ("")
 	return (rDist < 1.2 * eDist and rDist > 0.8 * eDist)
 
-#cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
+#cap = cv2.VideoCapture(0)
 
 while (True):
 	ret, frame = cap.read()
@@ -47,6 +47,7 @@ while (True):
 ## update these for the green color of our LED
 	lower_green = np.array([0,0,75])
 	upper_green = np.array([120,209,255])
+	#This is inverted but it works on robot
 
 	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
 	cv2.imshow('mask', hsvMask)
