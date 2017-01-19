@@ -1,14 +1,7 @@
 import cv2
-import socket 
+import socket
 import numpy as np
 
-UDP_IP = '255.255.255.255' 
-UDP_ PORT = 5005 
-MESSAGE
-
-socketout = socket (AF_INET, SOCK_DGRAM)
-socketout.(SOL_SOCKET, SO_REUSEADDR,1)
-socketout.(SOL_SOCKET, SO_BROADCAST,1)
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
@@ -57,7 +50,7 @@ def correctSpacingX(cntA, cntB):
 	error = abs(eDist - rDist)
 	return (1/(error + 1))
 	
-def udpBroadcast (cntA, cntB)
+def udpBroadcast (cntA, cntB):
 	 #Finds avg by adding x and y 
 	 avgY = (cntA[1] + cntB[1] / 2)
 	 avgX = (cntA[0] + cntB[0] / 2)
@@ -69,7 +62,7 @@ def udpBroadcast (cntA, cntB)
 	 targetY = (avgY +avgHeight) 
 	 
 	 #cv2.line(frame, (cntA[0], cntA[1]), (cntB[0],cntB[1]), (0,0,255), 3)
-	 cv2.circle(frame, ( avgX, avgY), (10), (0,255,255), -1)
+	 cv2.circle(frame, (int( avgX), int( avgY)), (10), (0,255,255), -1)
 
 	 cv2.imshow('Target\'s aquired', frame)
 	 
@@ -78,12 +71,19 @@ def udpBroadcast (cntA, cntB)
 	 
 	 avgHeight = (avgHeight / capHeight)
 	 avgWidth = (avgWidth / capWidth)
+	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(avgWidth)+',' + str(avgHeight)))
+	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
+
 	 
-	 socketout.sendto((str(targetX)+ ',' str(targetY)+ ','+ str(avgWidth)',' + str(avgHeight)),(UDP_IP,PORT)
-	 
+UDP_IP = '255.255.255.255' 
+UDP_PORT = 5005 
+
+socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
+socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 
 		
-cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
+cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
 #cap = cv2.VideoCapture(0)
 
 capWidth = cap.get(4)
@@ -103,7 +103,7 @@ while (True):
 	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 	
 ## update these for the green color of our LED
-	lower_green = np.array([0,0,75])
+	lower_green = np.array([0,0,156])
 	upper_green = np.array([120,209,255])
 	#This is inverted but it works on robot
 
@@ -150,7 +150,7 @@ while (True):
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
 # for each contour check if there is another similar contour an appropiate distance away on the left or right
-	bestFoundTarget = [null, null] 
+	bestFoundTarget = [0, 0] 
 	highestScore = 0 
 	
 	for cntA in possibleTargetBoundingRect:
@@ -160,8 +160,8 @@ while (True):
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
 				highestScore = currentScore
-				print(currentScore)
-	if (highestScore > 0.8): 	
+			
+	if (highestScore > 0.05): 	
 		print("target found!")
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 
