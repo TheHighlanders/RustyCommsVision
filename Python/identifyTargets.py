@@ -1,23 +1,49 @@
 import cv2
+import socket 
 import numpy as np
+
+UDP_IP = '255.255.255.255' 
+UDP_ PORT = 5005 
+MESSAGE
+
+socketout = socket (AF_INET, SOCK_DGRAM)
+socketout.(SOL_SOCKET, SO_REUSEADDR,1)
+socketout.(SOL_SOCKET, SO_BROADCAST,1)
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
 	return (w/h >= 1.5/5 and w/h <= 2.5/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
-	return (cv2.contourArea(cnt) >= 0.7*w*h)
+	return (cv2.contourArea(cnt) >= 0.7 * w * h)
 
+	#cntA and cntB are contour A and B
 def correctSize(cntA, cntB):
 	'''returns true if the two contours are of similar height and false if not. bbcc testing aspect ratio before, we do not need to compare their widths'''
-	return (1.2 * cntA[3] > cntB[3] or 1.2 * cntB[3] > cntA[3])
+	error = abs (cntA[3] - cntB[3])
+	return (1/(error + 1)) 
+
+def correctSpacingY(cntA, cntB):
+	'''returns 1 if the two contours are the expected distance apart in y direction. It gets near zero has the error gets big'''
+	# Expected distance
+	eDist = 0
+	#print ("eDist: ")
+	#print (eDist)
+
+	# real distance
+	rDist = abs(cntA[1] - cntB[1])
+	#print ("rDist: ")
+	#print (rDist)
+	#print ("")
+	error = abs(eDist - rDist)
+	return (1/(error + 1))
 
 def mean(a,b):
 	'''returns the mean of two numbers'''
-	return (0.5*a + 0.5*b)
+	return (0.5 * a + 0.5 * b)
 
-def correctSpacing(cntA, cntB):
-	'''returns true if the two contours are the expected distance apart and false if not'''
+def correctSpacingX(cntA, cntB):
+	'''returns 1 if space is correct. returns 0 is space is not correct. This is horizontal direction'''
 	# Expected distance
 	eDist = (mean(cntA[3], cntB[3]) / 5) * 8.25
 	#print ("eDist: ")
@@ -28,10 +54,42 @@ def correctSpacing(cntA, cntB):
 	#print ("rDist: ")
 	#print (rDist)
 	#print ("")
-	return (rDist < 1.2 * eDist and rDist > 0.8 * eDist)
+	error = abs(eDist - rDist)
+	return (1/(error + 1))
+	
+def udpBroadcast (cntA, cntB)
+	 #Finds avg by adding x and y 
+	 avgY = (cntA[1] + cntB[1] / 2)
+	 avgX = (cntA[0] + cntB[0] / 2)
+	 #Finds avg by adding height and width
+	 avgHeight = (cntA[3] + cntB[3] / 2)   
+	 avgWidth = (cntA [2] + cntB[2] / 2)
+	 
+	 targetX = (avgX + avgWidth)
+	 targetY = (avgY +avgHeight) 
+	 
+	 #cv2.line(frame, (cntA[0], cntA[1]), (cntB[0],cntB[1]), (0,0,255), 3)
+	 cv2.circle(frame, ( avgX, avgY), (10), (0,255,255), -1)
 
+	 cv2.imshow('Target\'s aquired', frame)
+	 
+	 targetX = (targetX / capWidth)
+	 targetY = (targetY / capHeight)
+	 
+	 avgHeight = (avgHeight / capHeight)
+	 avgWidth = (avgWidth / capWidth)
+	 
+	 socketout.sendto((str(targetX)+ ',' str(targetY)+ ','+ str(avgWidth)',' + str(avgHeight)),(UDP_IP,PORT)
+	 
+
+		
 cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
 #cap = cv2.VideoCapture(0)
+
+capWidth = cap.get(4)
+print(capWidth) 
+capHeight = cap.get(3)
+print(capHeight)
 
 while (True):
 	ret, frame = cap.read()
@@ -92,15 +150,20 @@ while (True):
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
 # for each contour check if there is another similar contour an appropiate distance away on the left or right
-
+	bestFoundTarget = [null, null] 
+	highestScore = 0 
+	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
-			if correctSize(cntA, cntB) and correctSpacing(cntA, cntB):
-				print("target found!")
-				cv2.line(frame, (cntA[0], cntA[1]), (cntB[0],cntB[1]), (0,0,255), 3)
-				cv2.circle(frame, ((int)((cntA[0] + cntB[0])/ 2),(int)((cntA[1] + cntB[1])/ 2)), (10), (0,255,255), -1)
-
-				cv2.imshow('Target\'s aquired', frame)
+			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB)	
+			if currentScore > highestScore:
+				bestFoundTarget [0] = cntA
+				bestFoundTarget [1] = cntB 
+				highestScore = currentScore
+				print(currentScore)
+	if (highestScore > 0.8): 	
+		print("target found!")
+		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 
 ## Draw a line between the targets, and put a dot at the center
 ## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
