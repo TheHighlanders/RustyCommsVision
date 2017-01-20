@@ -2,6 +2,7 @@ import cv2
 import socket
 import numpy as np
 
+#Created by Adriana Massie and David Matthews  
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
@@ -61,11 +62,6 @@ def udpBroadcast (cntA, cntB):
 	 targetX = (avgX + avgWidth)
 	 targetY = (avgY +avgHeight) 
 	 
-	 #cv2.line(frame, (cntA[0], cntA[1]), (cntB[0],cntB[1]), (0,0,255), 3)
-	 cv2.circle(frame, (int( avgX), int( avgY)), (10), (0,255,255), -1)
-
-	 cv2.imshow('Target\'s aquired', frame)
-	 
 	 targetX = (targetX / capWidth)
 	 targetY = (targetY / capHeight)
 	 
@@ -74,6 +70,22 @@ def udpBroadcast (cntA, cntB):
 	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(avgWidth)+',' + str(avgHeight)))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
+def drawTarget(rectangle1, rectangle2):
+	 #Finds avg by adding x and y 
+	 avgY = (rectangle1[1] + rectangle2[1] / 2)
+	 avgX = (rectangle1[0] + rectangle2[0] / 2)
+	 #Finds avg by adding height and width
+	 avgHeight = (rectangle1[3] + rectangle2[3] / 2)   
+	 avgWidth = (rectangle1 [2] + rectangle2[2] / 2)
+	 
+	 targetX = (avgX + avgWidth)
+	 targetY = (avgY +avgHeight) 
+	 
+	 targetFrame = np.copy(frame)
+	 cv2.rectangle(targetFrame, Point (rectangle1[0],rectangle1[1]),Point (rectangle1[2] + rectangle1[0] ,rectangle1[3] + rectangle1[1]),(255,0,0),10) 
+	 cv2.circle(targetFound, (int( targetX), int( targetY)), (10), (0,255,255), -1)
+
+	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 UDP_IP = '255.255.255.255' 
 UDP_PORT = 5005 
@@ -86,9 +98,9 @@ socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
 #cap = cv2.VideoCapture(0)
 
-capWidth = cap.get(4)
+capWidth = cap.get(3)
 print(capWidth) 
-capHeight = cap.get(3)
+capHeight = cap.get(4)
 print(capHeight)
 
 while (True):
@@ -117,11 +129,10 @@ while (True):
 	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
 	cv2.imshow('closeHoles', maskCloseHoles)
 
+
 ## get contours for more abstract analysis
 
 	c1, hsvContours, _ = cv2.findContours(maskCloseHoles, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-	
 
 
 ## Filter contors for ones with resonable aspect ratios
@@ -164,7 +175,8 @@ while (True):
 	if (highestScore > 0.05): 	
 		print("target found!")
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
-
+		drawTarget(bestFoundTarget[0], bestFoundTarget[1])	
+	
 ## Draw a line between the targets, and put a dot at the center
 ## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
 ## cv2.circle(img, (x,y), (radius), (0,255,255), thickness)
