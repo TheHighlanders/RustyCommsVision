@@ -70,23 +70,27 @@ def udpBroadcast (cntA, cntB):
 	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(avgWidth)+',' + str(avgHeight)))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
-def drawTarget(rectangle1, rectangle2):
+def drawTarget(rectangle1: list, rectangle2: list):
 	 #Finds avg by adding x and y 
-	 avgY = (rectangle1[1] + rectangle2[1] / 2)
-	 avgX = (rectangle1[0] + rectangle2[0] / 2)
+	 avgY = (rectangle1[1] + rectangle2[1]) / 2
+	 avgX = (rectangle1[0] + rectangle2[0]) / 2
+
 	 #Finds avg by adding height and width
-	 avgHeight = (rectangle1[3] + rectangle2[3] / 2)   
-	 avgWidth = (rectangle1 [2] + rectangle2[2] / 2)
+	 avgHeight = (rectangle1[3] + rectangle2[3] )/ 2   
+	 avgWidth = (rectangle1 [2] + rectangle2[2] )/ 2
 	 
-	 targetX = (avgX + avgWidth)
-	 targetY = (avgY +avgHeight) 
+	 targetX = (avgX + avgWidth / 2)
+	 targetY = (avgY + avgHeight / 2) 
 	 
 	 targetFrame = np.copy(frame)
-	 cv2.rectangle(targetFrame, Point (rectangle1[0],rectangle1[1]),Point (rectangle1[2] + rectangle1[0] ,rectangle1[3] + rectangle1[1]),(255,0,0),10) 
-	 cv2.circle(targetFound, (int( targetX), int( targetY)), (10), (0,255,255), -1)
+
+	 cv2.rectangle(targetFrame, (rectangle1[0],rectangle1[1]),(rectangle1[0] + rectangle1[2], rectangle1[1] + rectangle1[3]), (255,0,0),-1) 
+	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
+	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
 	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
+highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
 UDP_PORT = 5005 
 
@@ -95,8 +99,8 @@ socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 
 		
-cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
-#cap = cv2.VideoCapture(0)
+#cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
+cap = cv2.VideoCapture(0)
 
 capWidth = cap.get(3)
 print(capWidth) 
@@ -115,8 +119,8 @@ while (True):
 	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 	
 ## update these for the green color of our LED
-	lower_green = np.array([0,0,156])
-	upper_green = np.array([120,209,255])
+	lower_green = np.array([40,25,0])
+	upper_green = np.array([255,255,255])
 	#This is inverted but it works on robot
 
 	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
@@ -166,16 +170,19 @@ while (True):
 	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
-			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB)	
+			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB) * ((cntA[3]+ cntB[3]) /2)	
 			if currentScore > highestScore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
 				highestScore = currentScore
 			
-	if (highestScore > 0.05): 	
-		print("target found!")
+	if (highestScore > 0.01): 	
+		print("target found. Score: " + str(highestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
-		drawTarget(bestFoundTarget[0], bestFoundTarget[1])	
+		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
+		if (highestScore > highestTargetScoreYet):
+			highestTargetScoreYet = highestScore
+			print("HighestScore: " +str(highestTargetScoreYet))	
 	
 ## Draw a line between the targets, and put a dot at the center
 ## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
