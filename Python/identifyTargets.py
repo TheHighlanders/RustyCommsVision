@@ -15,7 +15,7 @@ def percentFilled(w,h,cnt):
 def correctSize(cntA, cntB):
 	'''returns true if the two contours are of similar height and false if not. bbcc testing aspect ratio before, we do not need to compare their widths'''
 	error = abs (cntA[3] - cntB[3])
-	return (1/(error + 1)) 
+	return (0.5*error**2)
 
 def correctSpacingY(cntA, cntB):
 	'''returns 1 if the two contours are the expected distance apart in y direction. It gets near zero has the error gets big'''
@@ -30,7 +30,7 @@ def correctSpacingY(cntA, cntB):
 	#print (rDist)
 	#print ("")
 	error = abs(eDist - rDist)
-	return (1/(error + 1))
+	return (0.3*error**3)
 
 def mean(a,b):
 	'''returns the mean of two numbers'''
@@ -49,7 +49,7 @@ def correctSpacingX(cntA, cntB):
 	#print (rDist)
 	#print ("")
 	error = abs(eDist - rDist)
-	return (1/(error + 1))
+	return (0.01*error**3)
 	
 def udpBroadcast (cntA, cntB):
 	 #Finds avg by adding x and y 
@@ -90,7 +90,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 
 	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
-highestTargetScoreYet = 0;
+lowestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
 UDP_PORT = 5005 
 
@@ -166,23 +166,23 @@ while (True):
 
 # for each contour check if there is another similar contour an appropiate distance away on the left or right
 	bestFoundTarget = [0, 0] 
-	highestScore = 0 
+	lowestScore = 0 
 	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
-			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB) * ((cntA[3]+ cntB[3]) /2)	
-			if currentScore > highestScore:
+			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) *correctSpacingY(cntA, cntB)	
+			if currentScore <lowestSore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
-				highestScore = currentScore
+				lowestScore = currentScore
 			
-	if (highestScore > 0.01): 	
-		print("target found. Score: " + str(highestScore))
+	if (lowestScore < 100000000000 ): 	
+		print("target found. Score: " + str(lowestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
-		if (highestScore > highestTargetScoreYet):
-			highestTargetScoreYet = highestScore
-			print("HighestScore: " +str(highestTargetScoreYet))	
+		if (lowestScore < lowestTargetScoreYet):
+			lowestTargetScoreYet = lowestScore
+			print("lowestScore: " +str(lowestTargetScoreYet))	
 	
 ## Draw a line between the targets, and put a dot at the center
 ## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
