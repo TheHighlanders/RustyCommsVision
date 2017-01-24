@@ -2,7 +2,16 @@ import cv2
 import socket
 import numpy as np
 
-#Created by Adriana Massie and David Matthews  
+#Created by Adriana Massie and David Matthews
+
+
+# Useful mathy funtios for readability
+def mean(a,b):
+	'''returns the mean of two numbers'''
+	return (0.5 * a + 0.5 * b)
+
+
+# Testing if each found contor is a possible piece of tape
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
@@ -11,53 +20,65 @@ def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
 	return (cv2.contourArea(cnt) >= 0.7 * w * h)
 
-	#cntA and cntB are contour A and B
+
+# Testing if a pair of two contours which are considered a piece of tape could be the target by running some tests on them to geneate a score.
+
+# ToDo: Implement Hysteresis avoidence by lowering the score threshold once we find a target to stay locked onto it. Once we loose the target, raise the threshold again.
+
 def correctSize(cntA, cntB):
 	'''returns true if the two contours are of similar height and false if not. bbcc testing aspect ratio before, we do not need to compare their widths'''
-	error = abs (cntA[3] - cntB[3])
-	return (0.5*error**2)
+	meanHeight = mean(cntA[3], cntB[3])
+
+	realError = abs (cntA[3] - cntB[3])
+
+	normalizedError = (realError / meanHeight)
+	score = 0.5*normalizedError**2 + 1
+
+	return (score)
 
 def correctSpacingY(cntA, cntB):
 	'''returns 1 if the two contours are the expected distance apart in y direction. It gets near zero has the error gets big'''
 	# Expected distance
 	eDist = 0
-	#print ("eDist: ")
-	#print (eDist)
 
 	# real distance
 	rDist = abs(cntA[1] - cntB[1])
-	#print ("rDist: ")
-	#print (rDist)
-	#print ("")
-	error = abs(eDist - rDist)
-	return (0.3*error**3)
 
-def mean(a,b):
-	'''returns the mean of two numbers'''
-	return (0.5 * a + 0.5 * b)
+	realError = abs(eDist - rDist)
+
+	meanHeight = mean(cntA[3], cntB[3])
+
+	normalizedError = (realError / meanHeight)
+	
+	score = 0.3*normalizedError**3 + 1
+
+	return (score)
+
+
 
 def correctSpacingX(cntA, cntB):
 	'''returns 1 if space is correct. returns 0 is space is not correct. This is horizontal direction'''
 	# Expected distance
 	eDist = (mean(cntA[3], cntB[3]) / 5) * 8.25
-	#print ("eDist: ")
-	#print (eDist)
 
 	# real distance
 	rDist = abs(cntA[0] - cntB[0])
-	#print ("rDist: ")
-	#print (rDist)
-	#print ("")
-	error = abs(eDist - rDist)
-	return (0.01*error**3)
+
+	realError = abs(eDist - rDist)
+	normalizedError = realError / eDist
+	score = 0.01*normalizedError**3 + 1
+	return (score)
 	
+# Sharing the metadata of the target with the network.
+
+
 def udpBroadcast (cntA, cntB):
 	 #Finds avg by adding x and y 
-	 avgY = (cntA[1] + cntB[1] / 2)
-	 avgX = (cntA[0] + cntB[0] / 2)
+	 avgY = (cntA[1] + cntB[1]) / 2
+	 avgX = (cntA[0] + cntB[0]) / 2
 	 #Finds avg by adding height and width
-	 avgHeight = (cntA[3] + cntB[3] / 2)   
-	 avgWidth = (cntA [2] + cntB[2] / 2)
+	 avgHeight = (cntA[3] + cntB[3]) / 2   
+	 avgWidth = (cntA [2] + cntB[2] )/ 2
 	 
 	 targetX = (avgX + avgWidth)
 	 targetY = (avgY +avgHeight) 
@@ -70,6 +91,8 @@ def udpBroadcast (cntA, cntB):
 	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(avgWidth)+',' + str(avgHeight)))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
+# Draw the target onto the frame for debugging, and to send something to axis to thank them for the cameras. Do a screen recording once we have it working.
+
 def drawTarget(rectangle1: list, rectangle2: list):
 	 #Finds avg by adding x and y 
 	 avgY = (rectangle1[1] + rectangle2[1]) / 2
@@ -79,8 +102,8 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 avgHeight = (rectangle1[3] + rectangle2[3] )/ 2   
 	 avgWidth = (rectangle1 [2] + rectangle2[2] )/ 2
 	 
-	 targetX = (avgX + avgWidth / 2)
-	 targetY = (avgY + avgHeight / 2) 
+	 targetX = (avgX + avgWidth )/ 2
+	 targetY = (avgY + avgHeight) / 2 
 	 
 	 targetFrame = np.copy(frame)
 
@@ -170,13 +193,13 @@ while (True):
 	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
-			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) *correctSpacingY(cntA, cntB)	
-			if currentScore <lowestSore:
+			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB)	
+			if currentScore < lowestScore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
 				lowestScore = currentScore
 			
-	if (lowestScore < 100000000000 ): 	
+	if (lowestScore < 100 ): 	
 		print("target found. Score: " + str(lowestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
