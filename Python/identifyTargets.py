@@ -74,17 +74,19 @@ def correctSpacingX(cntA, cntB):
 
 def udpBroadcast (cntA, cntB):
 	 #Finds avg by adding x and y 
+	
+	 print (cntA[0])
 	 avgY = (cntA[1] + cntB[1]) / 2
 	 avgX = (cntA[0] + cntB[0]) / 2
 	 #Finds avg by adding height and width
-	 avgHeight = (cntA[3] + cntB[3]) / 2   
+	 avgHeight = (cntA[3] + cntB[3] ) / 2   
 	 avgWidth = (cntA [2] + cntB[2] )/ 2
 	 
 	 targetX = (avgX + avgWidth)
 	 targetY = (avgY +avgHeight) 
 	 
-	 targetX = (targetX / capWidth)
-	 targetY = (targetY / capHeight)
+	 targetX = int(targetX / capWidth)
+	 targetY = int(targetY / capHeight)
 	 
 	 avgHeight = (avgHeight / capHeight)
 	 avgWidth = (avgWidth / capWidth)
@@ -188,7 +190,7 @@ while (True):
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
 # for each contour check if there is another similar contour an appropiate distance away on the left or right
-	bestFoundTarget = [0, 0] 
+	bestFoundTarget = [[0,0,0,0], [0,0,0,0]] 
 	lowestScore = 0 
 	
 	for cntA in possibleTargetBoundingRect:
@@ -198,6 +200,7 @@ while (True):
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
 				lowestScore = currentScore
+				print(str(cntA))
 			
 	if (lowestScore < 100 ): 	
 		print("target found. Score: " + str(lowestScore))
