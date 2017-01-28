@@ -1,6 +1,7 @@
 import cv2
 import socket
 import numpy as np
+import math
 
 #Created by Adriana Massie and David Matthews  
 
@@ -14,23 +15,28 @@ def percentFilled(w,h,cnt):
 	#cntA and cntB are contour A and B
 def correctSize(cntA, cntB):
 	'''returns true if the two contours are of similar height and false if not. bbcc testing aspect ratio before, we do not need to compare their widths'''
-	error = abs (cntA[3] - cntB[3])
-	return (1/(error + 1)) 
+	avgHeight = (cntA[3] + cntB[3]) / 2
+	rawError = abs (cntA[3] - cntB[3])
+	scaledError = int (rawError / avgHeight) 
+	returnError =  int((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
+	print ("correctSize: " + str(returnError))
+	return (returnError) 
 
 def correctSpacingY(cntA, cntB):
 	'''returns 1 if the two contours are the expected distance apart in y direction. It gets near zero has the error gets big'''
 	# Expected distance
 	eDist = 0
-	#print ("eDist: ")
-	#print (eDist)
 
 	# real distance
 	rDist = abs(cntA[1] - cntB[1])
-	#print ("rDist: ")
-	#print (rDist)
-	#print ("")
-	error = abs(eDist - rDist)
-	return (1/(error + 1))
+	
+	avgHeight = ((cntA[3] + cntB[3]) / 2)
+   
+	rawError = abs(eDist - rDist)
+	scaledError = rawError / avgHeight
+	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
+	print ("correctYSpacing: " + str(returnError))
+	return (returnError)
 
 def mean(a,b):
 	'''returns the mean of two numbers'''
@@ -40,24 +46,23 @@ def correctSpacingX(cntA, cntB):
 	'''returns 1 if space is correct. returns 0 is space is not correct. This is horizontal direction'''
 	# Expected distance
 	eDist = (mean(cntA[3], cntB[3]) / 5) * 8.25
-	#print ("eDist: ")
-	#print (eDist)
-
+	
 	# real distance
 	rDist = abs(cntA[0] - cntB[0])
-	#print ("rDist: ")
-	#print (rDist)
-	#print ("")
-	error = abs(eDist - rDist)
-	return (1/(error + 1))
+	
+	rawError = abs(eDist - rDist)
+	scaledError = rawError / eDist
+	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
+	print ("correctXSpacing: " + str(returnError))
+	return (returnError)
 	
 def udpBroadcast (cntA, cntB):
 	 #Finds avg by adding x and y 
-	 avgY = (cntA[1] + cntB[1] / 2)
-	 avgX = (cntA[0] + cntB[0] / 2)
+	 avgY = (cntA[1] + cntB[1]) / 2
+	 avgX = (cntA[0] + cntB[0]) / 2
 	 #Finds avg by adding height and width
-	 avgHeight = (cntA[3] + cntB[3] / 2)   
-	 avgWidth = (cntA [2] + cntB[2] / 2)
+	 avgHeight = (cntA[3] + cntB[3]) / 2   
+	 avgWidth = (cntA [2] + cntB[2] )/ 2
 	 
 	 targetX = (avgX + avgWidth)
 	 targetY = (avgY +avgHeight) 
@@ -99,8 +104,8 @@ socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 
 		
-#cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
+#cap = cv2.VideoCapture(0)
 
 capWidth = cap.get(3)
 print(capWidth) 
@@ -119,8 +124,10 @@ while (True):
 	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 	
 ## update these for the green color of our LED
-	lower_green = np.array([40,25,0])
-	upper_green = np.array([255,255,255])
+	
+	lower_green = np.array([50,50,160])
+	upper_green = np.array([180,255,250])
+
 	#This is inverted but it works on robot
 
 	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
@@ -156,6 +163,7 @@ while (True):
 		if (aspectRatio(w,h) and percentFilled(w,h,cnt)):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
+	print (len(possibleTargetBoundingRect))
 
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
@@ -166,17 +174,18 @@ while (True):
 
 # for each contour check if there is another similar contour an appropiate distance away on the left or right
 	bestFoundTarget = [0, 0] 
-	highestScore = 0 
+	highestScore = 100000
 	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
-			currentScore = correctSize(cntA, cntB) * correctSpacingX(cntA, cntB) * correctSpacingY(cntA, cntB) * ((cntA[3]+ cntB[3]) /2)	
-			if currentScore > highestScore:
+			currentScore = correctSize(cntA, cntB) + correctSpacingX(cntA, cntB) + correctSpacingY(cntA, cntB)
+			print ("Score: " + str(currentScore))	
+			if currentScore < highestScore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
 				highestScore = currentScore
 			
-	if (highestScore > 0.01): 	
+	if (highestScore < 50): 	
 		print("target found. Score: " + str(highestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 		drawTarget(bestFoundTarget[0], bestFoundTarget[1])

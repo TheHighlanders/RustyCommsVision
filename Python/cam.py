@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-#cap = cv2.VideoCapture('http://10.62.1.43/mjpg/video.mjpg')
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('http://10.62.1.108/mjpg/video.mjpg')
+#cap = cv2.VideoCapture(0)
 
 def nothing(x):
     pass
@@ -31,7 +31,7 @@ while(1):
 
     # Normal masking algorithm
     lower_blue = np.array([h,s,v])
-    upper_blue = np.array([180,255,255])
+    upper_blue = np.array([255,255,255])
 
     mask = cv2.inRange(hsv,lower_blue, upper_blue)
 
