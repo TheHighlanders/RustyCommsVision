@@ -117,7 +117,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 
 lowestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
-UDP_PORT = 5005 
+UDP_PORT = 5801
 
 socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
