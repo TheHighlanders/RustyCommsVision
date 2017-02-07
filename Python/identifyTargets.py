@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 import cv2
 import socket
 import numpy as np
@@ -104,8 +105,8 @@ socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 
 		
-cap = cv2.VideoCapture("http://10.62.1.108/mjpg/video.mjpg")
-#cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("http://01axis6201.local/mjpg/video.mjpg")
+#cap = cv2.VideoCapture(1)
 
 capWidth = cap.get(3)
 print(capWidth) 
@@ -125,7 +126,7 @@ while (True):
 	
 ## update these for the green color of our LED
 	
-	lower_green = np.array([50,50,160])
+	lower_green = np.array([60,138,161])
 	upper_green = np.array([180,255,250])
 
 	#This is inverted but it works on robot
@@ -135,10 +136,10 @@ while (True):
 	
 	kernel = np.ones((5,5), np.uint8)
 	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
-	cv2.imshow('removenoise', maskRemoveNoise)
+#	cv2.imshow('removenoise', maskRemoveNoise)
 
 	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
-	cv2.imshow('closeHoles', maskCloseHoles)
+#	cv2.imshow('closeHoles', maskCloseHoles)
 
 
 ## get contours for more abstract analysis
@@ -163,7 +164,8 @@ while (True):
 		if (aspectRatio(w,h) and percentFilled(w,h,cnt)):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
-	print (len(possibleTargetBoundingRect))
+	if (int(len(possibleTargetBoundingRect)) >= 1):
+		print (len(possibleTargetBoundingRect))
 
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
@@ -186,7 +188,7 @@ while (True):
 				highestScore = currentScore
 			
 	if (highestScore < 50): 	
-		print("target found. Score: " + str(highestScore))
+		print("target found. Score: \n\n\n\n\n " + str(highestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
 		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
 		if (highestScore > highestTargetScoreYet):

@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-cap = cv2.VideoCapture('http://10.62.1.108/mjpg/video.mjpg')
-#cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('http://01axis6201.local/mjpg/video.mjpg')
+#cap = cv2.VideoCapture(1)
 
 def nothing(x):
     pass
