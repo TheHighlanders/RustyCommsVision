@@ -3,8 +3,16 @@ import cv2
 import socket
 import numpy as np
 import math
+import time
 
 #Created by Adriana Massie and David Matthews  
+
+
+
+
+def uptime():
+    ms = time.time()*1000.0 
+    return ms
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
@@ -103,26 +111,69 @@ UDP_PORT = 5005
 socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
+oimg = 0
+img = 0
+oinit = 0
+oread = 0
+oblur = 0
+ohsv = 0
+omask = 0
+odenoise = 0
+otape = 0
+init = 0
+read = 0
+blur = 0
+hsv = 0
+mask = 0
+denoise = 0
+tape = 0
+cnt = 0
+ocnt = 0
+oinit = uptime ()
 
-		
-cap = cv2.VideoCapture("http://01axis6201.local/mjpg/video.mjpg")
-#cap = cv2.VideoCapture(1)
+#cap = cv2.VideoCapture("http://01axis6201.local/mjpg/video.mjpg")
+cap = cv2.VideoCapture(0)
 
 capWidth = cap.get(3)
 print(capWidth) 
 capHeight = cap.get(4)
 print(capHeight)
 
-while (True):
-	ret, frame = cap.read()
+init = uptime()
+print( 'Init:\t\t' + str(init - oinit))
+meow = 0
+while (meow <100000):
+	oimg = uptime()
+	
+	
 
+	
+
+	#init = uptime()
+	#print( 'Init:\t\t' + str(init - oinit))
+	#oinit = init
+
+	meow = meow+1	
+	oread = uptime()
+	ret, frame = cap.read()
+	read = uptime()
+	print( 'read:\t\t'  + str(read - oread))
+	
+	
 
 ## Pre-Processing to convert RGB image to a binary image
-
-	blur = cv2.GaussianBlur(frame, (15,15),1)
+	oblur = uptime()
+	bluri = cv2.GaussianBlur(frame, (15,15),1)
 #	cv2.imshow('blur', blur)
+	blur = uptime()
+	print( 'Blur:\t\t' + str( blur - oblur))
 
-	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+
+# HSV
+	ohsv = uptime()
+	hsvi = cv2.cvtColor(bluri, cv2.COLOR_BGR2HSV)
+	hsv = uptime()
+	print( 'HSV:\t\t' + str(hsv - ohsv))
 	
 ## update these for the green color of our LED
 	
@@ -130,9 +181,13 @@ while (True):
 	upper_green = np.array([180,255,250])
 
 	#This is inverted but it works on robot
-
-	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
-	cv2.imshow('mask', hsvMask)
+	omask = uptime()
+	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
+#	cv2.imshow('mask', hsvMask)
+	mask = uptime()
+	print( 'mask:\t\t' + str(mask - omask))
+	
+	odenoise = uptime()
 	
 	kernel = np.ones((5,5), np.uint8)
 	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
@@ -140,11 +195,16 @@ while (True):
 
 	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
 #	cv2.imshow('closeHoles', maskCloseHoles)
-
+	denoise = uptime()
+	print( 'denoise:\t' + str(denoise - odenoise))
 
 ## get contours for more abstract analysis
+	ocnt = uptime()
 
 	c1, hsvContours, _ = cv2.findContours(maskCloseHoles, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+	cnt = uptime()
+	print( 'cnt:\t\t' + str(cnt - ocnt))
 
 
 ## Filter contors for ones with resonable aspect ratios
@@ -159,6 +219,7 @@ while (True):
 	possibleTargetBoundingRect = []	
 
 # if the contour looks like a possible piece of target tape, add it to the list
+	otape = uptime()
 	for cnt in hsvContours:
 		x, y, w, h = cv2.boundingRect(cnt)
 		if (aspectRatio(w,h) and percentFilled(w,h,cnt)):
@@ -166,11 +227,14 @@ while (True):
 			possibleTargetBoundingRect.append([x,y,w,h])
 	if (int(len(possibleTargetBoundingRect)) >= 1):
 		print (len(possibleTargetBoundingRect))
+	tape = uptime()
+	print( 'tape:\t\t'+ str(tape - otape))
+
 
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-	cv2.imshow("potential target half's", frameContours)
+	#cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
@@ -194,13 +258,16 @@ while (True):
 		if (highestScore > highestTargetScoreYet):
 			highestTargetScoreYet = highestScore
 			print("HighestScore: " +str(highestTargetScoreYet))	
+			print( 'target:\t'+ str(uptime()))
 	
 ## Draw a line between the targets, and put a dot at the center
 ## cv2.line(img, (startX, startY), (endX,endY), (0,0,255), thickness)
 ## cv2.circle(img, (x,y), (radius), (0,255,255), thickness)
 
 
-
+	img = uptime()
+	print ('img:\t\t' + str(img - oimg))
+	print ('\n\n\n')
 ## Graceful shutdown	
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
