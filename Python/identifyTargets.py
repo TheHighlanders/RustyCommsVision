@@ -131,8 +131,8 @@ cnt = 0
 ocnt = 0
 oinit = uptime ()
 
-#cap = cv2.VideoCapture("http://01axis6201.local/mjpg/video.mjpg")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("http://02axis6201.local/mjpg/video.mjpg")
+#cap = cv2.VideoCapture(0)
 
 capWidth = cap.get(3)
 print(capWidth) 
@@ -158,20 +158,21 @@ while (meow <100000):
 	ret, frame = cap.read()
 	read = uptime()
 	print( 'read:\t\t'  + str(read - oread))
+	cv2.imshow('frame', frame)
 	
 	
 
 ## Pre-Processing to convert RGB image to a binary image
-	oblur = uptime()
-	bluri = cv2.GaussianBlur(frame, (15,15),1)
+#	oblur = uptime()
+#	bluri = cv2.GaussianBlur(frame, (15,15),1)
 #	cv2.imshow('blur', blur)
-	blur = uptime()
-	print( 'Blur:\t\t' + str( blur - oblur))
+#	blur = uptime()
+#	print( 'Blur:\t\t' + str( blur - oblur))
 
 
 # HSV
 	ohsv = uptime()
-	hsvi = cv2.cvtColor(bluri, cv2.COLOR_BGR2HSV)
+	hsvi = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	hsv = uptime()
 	print( 'HSV:\t\t' + str(hsv - ohsv))
 	
@@ -187,21 +188,21 @@ while (meow <100000):
 	mask = uptime()
 	print( 'mask:\t\t' + str(mask - omask))
 	
-	odenoise = uptime()
+#	odenoise = uptime()
 	
-	kernel = np.ones((5,5), np.uint8)
-	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
+#	kernel = np.ones((5,5), np.uint8)
+#	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
 #	cv2.imshow('removenoise', maskRemoveNoise)
 
-	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
+#	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
 #	cv2.imshow('closeHoles', maskCloseHoles)
-	denoise = uptime()
-	print( 'denoise:\t' + str(denoise - odenoise))
-
+	#denoise = uptime()
+#	print( 'denoise:\t' + str(denoise - odenoise))
+#
 ## get contours for more abstract analysis
 	ocnt = uptime()
 
-	c1, hsvContours, _ = cv2.findContours(maskCloseHoles, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	c1, hsvContours, _ = cv2.findContours(hsvMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 	cnt = uptime()
 	print( 'cnt:\t\t' + str(cnt - ocnt))
