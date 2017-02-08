@@ -94,18 +94,18 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
 	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
-	 cv2.imshow('Target\'s aquired', targetFrame)
+#	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
-UDP_PORT = 5005 
+UDP_PORT = 5801 
 
 socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST,1)
 
 		
-cap = cv2.VideoCapture("http://01axis6201.local/mjpg/video.mjpg")
+cap = cv2.VideoCapture("http://02axis6201.local/mjpg/video.mjpg")
 #cap = cv2.VideoCapture(1)
 
 capWidth = cap.get(3)
@@ -119,10 +119,10 @@ while (True):
 
 ## Pre-Processing to convert RGB image to a binary image
 
-	blur = cv2.GaussianBlur(frame, (15,15),1)
+	#blur = cv2.GaussianBlur(frame, (15,15),1)
 #	cv2.imshow('blur', blur)
 
-	hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	
 ## update these for the green color of our LED
 	
@@ -132,19 +132,19 @@ while (True):
 	#This is inverted but it works on robot
 
 	hsvMask = cv2.inRange(hsv, lower_green, upper_green)
-	cv2.imshow('mask', hsvMask)
+#	cv2.imshow('mask', hsvMask)
 	
-	kernel = np.ones((5,5), np.uint8)
-	maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
-#	cv2.imshow('removenoise', maskRemoveNoise)
+	#kernel = np.ones((5,5), np.uint8)
+	#maskRemoveNoise = cv2.morphologyEx(hsvMask, cv2.MORPH_OPEN, kernel)
+	#cv2.imshow('removenoise', maskRemoveNoise)
 
-	maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
-#	cv2.imshow('closeHoles', maskCloseHoles)
+	#maskCloseHoles = cv2.morphologyEx(maskRemoveNoise, cv2.MORPH_CLOSE, kernel)
+	#cv2.imshow('closeHoles', maskCloseHoles)
 
 
 ## get contours for more abstract analysis
 
-	c1, hsvContours, _ = cv2.findContours(maskCloseHoles, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	c1, hsvContours, _ = cv2.findContours(hsvMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 
 ## Filter contors for ones with resonable aspect ratios
@@ -170,7 +170,7 @@ while (True):
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-	cv2.imshow("potential target half's", frameContours)
+#	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 

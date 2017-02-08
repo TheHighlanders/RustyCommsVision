@@ -12,7 +12,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class AutoShutdown {
+public class AutoShutDown {
 
 	private static DatagramSocket inputSocket;
 	private static byte[] buffer;
@@ -27,7 +27,7 @@ public class AutoShutdown {
 		while (true) {
 			receiveAndProcessData();
 		}
-		inputSocket.close();
+		
 		
 	}
 
@@ -39,7 +39,7 @@ public class AutoShutdown {
 		}
 
 		buffer = new byte[256];
-		newFile();
+		
 	}
 
 
@@ -49,20 +49,31 @@ public class AutoShutdown {
 	 */
 	private static void receiveAndProcessData() {
 		DatagramPacket dataPacket = new DatagramPacket(buffer, buffer.length);
-		inputSocket.setSoTimeout(5000);
-		inputSocket.receive(dataPacket);
+		try {
+		
+			inputSocket.receive(dataPacket);
+		}
+		catch  (IOException e){
+			e.printStackTrace();
+		}
 
 		// parse to string
 		String dataString = new String(dataPacket.getData(), 0, dataPacket.getLength());
 
 		if (dataString.charAt(0) == 'e') {
-`			shutDown();
+			shutDown();
 		}
 		 
 	}
 
 
 	private static void shutDown () {
-		Process p = Runtime.getRuntime().exec("sudo shutdown -h now");
+		try {
+			Process p = Runtime.getRuntime().exec("sudo shutdown -h now");
+		}
+		catch (IOException e) {
+			e.printStackTrace();		
+		}
+
 	}
 }
