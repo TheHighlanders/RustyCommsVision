@@ -1,5 +1,13 @@
 #! /bin/sh
-
+### BEGIN INIT INFO
+# Provides:          StartVisionFRC6201
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: FRC 6201 autostarts vision code on boot.
+# Description:       See https://www.github.com/TheHighlanders/RustyCommsVision for more details.
+### END INIT INFO
 
 case "$1" in
   start|"")
