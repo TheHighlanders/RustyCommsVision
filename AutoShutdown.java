@@ -27,8 +27,6 @@ public class AutoShutdown {
 		while (true) {
 			receiveAndProcessData();
 		}
-		inputSocket.close();
-		
 	}
 
 	private static void init() {
@@ -39,7 +37,7 @@ public class AutoShutdown {
 		}
 
 		buffer = new byte[256];
-		newFile();
+
 	}
 
 
@@ -47,22 +45,26 @@ public class AutoShutdown {
 	/**
 	 * recieves data and stores it in buffer
 	 */
-	private static void receiveAndProcessData() {
+	private static void receiveAndProcessData() throws IOException {
 		DatagramPacket dataPacket = new DatagramPacket(buffer, buffer.length);
-		inputSocket.setSoTimeout(5000);
 		inputSocket.receive(dataPacket);
 
 		// parse to string
 		String dataString = new String(dataPacket.getData(), 0, dataPacket.getLength());
 
 		if (dataString.charAt(0) == 'e') {
-`			shutDown();
+			shutDown();
 		}
 		 
 	}
 
 
 	private static void shutDown () {
-		Process p = Runtime.getRuntime().exec("sudo shutdown -h now");
+		try {
+			 Process p = Runtime.getRuntime().exec("sudo shutdown -h now");
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

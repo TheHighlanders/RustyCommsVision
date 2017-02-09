@@ -102,7 +102,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
 	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
-	 cv2.imshow('Target\'s aquired', targetFrame)
+#	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
@@ -158,7 +158,7 @@ while (meow <100000):
 	ret, frame = cap.read()
 	read = uptime()
 	print( 'read:\t\t'  + str(read - oread))
-	cv2.imshow('frame', frame)
+#	cv2.imshow('frame', frame)
 	if (meow % 5 != 0 ):
 		continue
 	
@@ -187,7 +187,7 @@ while (meow <100000):
 	#This is inverted but it works on robot
 	omask = uptime()
 	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
-	cv2.imshow('mask', hsvMask)
+#	cv2.imshow('mask', hsvMask)
 	mask = uptime()
 	print( 'mask:\t\t' + str(mask - omask))
 	
@@ -238,7 +238,7 @@ while (meow <100000):
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-	cv2.imshow("potential target half's", frameContours)
+#	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
