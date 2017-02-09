@@ -16,10 +16,10 @@ def uptime():
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
-	return (w/h >= 1.5/5 and w/h <= 2.5/5)
+	return (w/h >= 1.5/5 and w/h <= 3/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
-	return (cv2.contourArea(cnt) >= 0.7 * w * h)
+	return (cv2.contourArea(cnt) >= 0.6 * w * h)
 
 	#cntA and cntB are contour A and B
 def correctSize(cntA, cntB):
@@ -106,7 +106,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 
 highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
-UDP_PORT = 5005 
+UDP_PORT = 5801 
 
 socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
 socketout.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
@@ -132,7 +132,7 @@ ocnt = 0
 oinit = uptime ()
 
 cap = cv2.VideoCapture("http://02axis6201.local/mjpg/video.mjpg")
-#cap = cv2.VideoCapture(0)
+#cap = cv2.VideoCapture(1)
 
 capWidth = cap.get(3)
 print(capWidth) 
@@ -159,6 +159,8 @@ while (meow <100000):
 	read = uptime()
 	print( 'read:\t\t'  + str(read - oread))
 	cv2.imshow('frame', frame)
+	if (meow % 5 != 0 ):
+		continue
 	
 	
 
@@ -173,18 +175,19 @@ while (meow <100000):
 # HSV
 	ohsv = uptime()
 	hsvi = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+	
 	hsv = uptime()
 	print( 'HSV:\t\t' + str(hsv - ohsv))
 	
 ## update these for the green color of our LED
 	
-	lower_green = np.array([60,138,161])
-	upper_green = np.array([180,255,250])
+	lower_green = np.array([8,0,200])
+	upper_green = np.array([180,255,255])
 
 	#This is inverted but it works on robot
 	omask = uptime()
 	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
-#	cv2.imshow('mask', hsvMask)
+	cv2.imshow('mask', hsvMask)
 	mask = uptime()
 	print( 'mask:\t\t' + str(mask - omask))
 	
@@ -235,7 +238,7 @@ while (meow <100000):
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-	#cv2.imshow("potential target half's", frameContours)
+	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
