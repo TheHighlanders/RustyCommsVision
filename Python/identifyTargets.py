@@ -4,8 +4,8 @@ import socket
 import numpy as np
 import math
 import time
-
-#Created by Adriana Massie and David Matthews  
+import subprocess
+#Created by Adriana Massie and David Matthews
 
 
 
@@ -131,8 +131,13 @@ cnt = 0
 ocnt = 0
 oinit = uptime ()
 
+print ('starting to attempt to ping the axis camera')
+p = subprocess.Popen(['ping', '-c', '2', 'https://02axis6201.local'])
+p.wait()
+print ('pinging completed')
 cap = cv2.VideoCapture("http://02axis6201.local/mjpg/video.mjpg")
 #cap = cv2.VideoCapture(1)
+print ('capture obtained')
 
 capWidth = cap.get(3)
 print(capWidth) 

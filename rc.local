@@ -1,0 +1,24 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# This script auto starts two deamons as part of the FIRST FRC 6201 2017 robot. 
+# One script auto shuts down the robot at the end of the match, the other one detects targets and broadcasts their locations over UDP.
+
+
+
+/usr/bin/java -jar /home/ubuntu/RustyCommsVision/AutoShutdown.jar &
+echo "Starting Auto Shutdown" >> /home/ubuntu/RustyCommsVision/log.txt
+
+/usr/bin/taskset 0x4 /home/ubuntu/RustyCommsVision/Python/identifyTargets.py &
+echo "Starting Vision Code" >> /home/ubuntu/RustyCommsVision/log.txt
+
+
+exit 0
