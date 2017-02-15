@@ -14,7 +14,7 @@ def uptime():
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
-	return (w/h >= 0.8/5 and w/h <= 3/5)
+	return (w/h >= 1/5 and w/h <= 3/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
 	return (cv2.contourArea(cnt) >= 0.3 * w * h)
@@ -137,7 +137,7 @@ p = subprocess.Popen(['ping', '-c', '2', '10.62.1.11'])
 p.wait()
 print ('pinging completed')
 
-cap = cv2.VideoCapture("https://10.62.1.11/mjpg/video.mjpg")
+cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x360&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
 
 #cap = cv2.VideoCapture(1)
 print ('capture obtained')
@@ -260,3 +260,4 @@ while (True):
 ## cleanup on shutdown
 cap.release();
 cv2.destroyAllWindows();
+print ("Shuting down Vision\n\n\n")
