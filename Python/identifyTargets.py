@@ -5,7 +5,7 @@ import numpy as np
 import math
 import time
 import subprocess
-#Created by Adriana Massie and David Matthews
+#Created by Adriana Massie, David Matthews and Baxter Ellard
 
 
 def uptime():
@@ -14,7 +14,7 @@ def uptime():
 
 def aspectRatio(w, h):
 	''' returns true if the rectangle is of the correct aspect ratio and false if not.'''	
-	return (w/h >= 1/5 and w/h <= 3/5)
+	return (w/h >= 1/5 and w/h <= 5.5/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
 	return (cv2.contourArea(cnt) >= 0.3 * w * h)
@@ -25,7 +25,7 @@ def correctSize(cntA, cntB):
 	avgHeight = (cntA[3] + cntB[3]) / 2
 	rawError = abs (cntA[3] - cntB[3])
 	scaledError = int (rawError / avgHeight) 
-	returnError =  int((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
+	returnError =  int((100 / (1 + math.e** (-20*(2*scaledError - 1.3)))) + 50*scaledError)
 #	print ("correctSize: " + str(returnError))
 	return (returnError) 
 
