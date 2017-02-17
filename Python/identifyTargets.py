@@ -17,7 +17,7 @@ def aspectRatio(w, h):
 	return (w/h >= 1/5 and w/h <= 5.5/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
-	return (cv2.contourArea(cnt) >= 0.3 * w * h)
+	return (cv2.contourArea(cnt) >= 0.5 * w * h)
 
 	#cntA and cntB are contour A and B
 def correctSize(cntA, cntB):
@@ -26,7 +26,7 @@ def correctSize(cntA, cntB):
 	rawError = abs (cntA[3] - cntB[3])
 	scaledError = int (rawError / avgHeight) 
 	returnError =  int((100 / (1 + math.e** (-20*(2*scaledError - 1.3)))) + 50*scaledError)
-#	print ("correctSize: " + str(returnError))
+	print ("correctSize: " + str(returnError))
 	return (returnError) 
 
 def correctSpacingY(cntA, cntB):
@@ -41,8 +41,8 @@ def correctSpacingY(cntA, cntB):
    
 	rawError = abs(eDist - rDist)
 	scaledError = rawError / avgHeight
-	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
-#	print ("correctYSpacing: " + str(returnError))
+	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 1.5)))) + 50*scaledError)
+	print ("correctYSpacing: " + str(returnError))
 	return (returnError)
 
 def mean(a,b):
@@ -60,7 +60,7 @@ def correctSpacingX(cntA, cntB):
 	rawError = abs(eDist - rDist)
 	scaledError = rawError / eDist
 	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
-#	print ("correctXSpacing: " + str(returnError))
+	print ("correctXSpacing: " + str(returnError))
 	return (returnError)
 	
 def udpBroadcast (cntA, cntB):
@@ -79,6 +79,7 @@ def udpBroadcast (cntA, cntB):
 	 
 	 avgHeight = (avgHeight / capHeight)
 	 print(avgHeight)
+	 print("hello!!!!")
 	 if (avgHeight >= 0.29):
 		 print('\n\n\n\n\n\n\n\n\n')
 	 avgWidth = (avgWidth / capWidth)
@@ -103,7 +104,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
 	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
-#	 cv2.imshow('Target\'s aquired', targetFrame)
+	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
@@ -178,7 +179,7 @@ while (True):
 
 	#This is inverted but it works on robot
 	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
-#	cv2.imshow('mask', hsvMask)
+	cv2.imshow('mask', hsvMask)
 
 #	odenoise = uptime()
 	
@@ -210,16 +211,17 @@ while (True):
 # if the contour looks like a possible piece of target tape, add it to the list
 	for cnt in hsvContours:
 		x, y, w, h = cv2.boundingRect(cnt)
-		if (aspectRatio(w,h) and percentFilled(w,h,cnt)):
+		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  50):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
+			print (str(w*h))
 	if (int(len(possibleTargetBoundingRect)) >= 1):
 		print (len(possibleTargetBoundingRect))
 
 ## Display the contours that might be targets.
-#	frameContours = np.copy(frame)
-#	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-#	cv2.imshow("potential target half's", frameContours)
+	frameContours = np.copy(frame)
+	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
+	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
@@ -230,7 +232,8 @@ while (True):
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
 			currentScore = correctSize(cntA, cntB) + correctSpacingX(cntA, cntB) + correctSpacingY(cntA, cntB)
-#			print ("Score: " + str(currentScore))	
+		
+			print ("Score: " + str(currentScore))	
 			if currentScore < highestScore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
@@ -239,7 +242,7 @@ while (True):
 	if (highestScore < 50): 	
 		print("target found. Score: \n\n\n\n\n " + str(highestScore))
 		udpBroadcast(bestFoundTarget[0], bestFoundTarget[1])
-#		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
+		drawTarget(bestFoundTarget[0], bestFoundTarget[1])
 		if (highestScore > highestTargetScoreYet):
 			highestTargetScoreYet = highestScore
 #			print("HighestScore: " +str(highestTargetScoreYet))	
