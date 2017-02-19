@@ -68,8 +68,13 @@ def udpBroadcast (cntA, cntB):
 	 avgY = (cntA[1] + cntB[1]) / 2
 	 avgX = (cntA[0] + cntB[0]) / 2
 	 #Finds avg by adding height and width
-	 avgHeight = max(cntA[3], cntB[3])
-	 avgWidth = abs(cntA[0] - cntB[0]) + max(cntA[2], cntB[2])
+	 avgHeight = 0.5 * cntA[3] + 0.5* cntB[3]
+	 avgWidth = 0.5* cntA[2] + 0.5 * cntB[2]
+
+	 fullWidth = abs(cntA[0] - cntB[0]) + max(cntA[2], cntB[2])
+	 realWidth = fullWidth / capWidth
+	 fullHeight = max(cntA[3], cntB[3])
+	 realHeight = fullHeight / capHeight
 	 
 	 targetX = (avgX + avgWidth)
 	 targetY = (avgY +avgHeight) 
@@ -78,13 +83,11 @@ def udpBroadcast (cntA, cntB):
 	 targetY = (targetY / capHeight)
 	 
 	 avgHeight = (avgHeight / capHeight)
-
-	 if (avgHeight >= 0.29):
-		 print('\n\n\n\n\n\n\n\n\n')
 	 avgWidth = (avgWidth / capWidth)
+	 
 	 print("aspectRatio" + str (avgWidth / avgHeight))
 	 print("hello!!!!")
-	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(avgWidth)+',' + str(avgHeight)))
+	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(realWidth)+',' + str(realHeight)))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
 def drawTarget(rectangle1: list, rectangle2: list):
