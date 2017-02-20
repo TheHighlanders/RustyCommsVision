@@ -26,7 +26,7 @@ def correctSize(cntA, cntB):
 	rawError = abs (cntA[3] - cntB[3])
 	scaledError = int (rawError / avgHeight) 
 	returnError =  int((100 / (1 + math.e** (-20*(2*scaledError - 1.3)))) + 50*scaledError)
-	print ("correctSize: " + str(returnError))
+#	print ("correctSize: " + str(returnError))
 	return (returnError) 
 
 def correctSpacingY(cntA, cntB):
@@ -42,7 +42,7 @@ def correctSpacingY(cntA, cntB):
 	rawError = abs(eDist - rDist)
 	scaledError = rawError / avgHeight
 	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 1.5)))) + 50*scaledError)
-	print ("correctYSpacing: " + str(returnError))
+#	print ("correctYSpacing: " + str(returnError))
 	return (returnError)
 
 def mean(a,b):
@@ -60,7 +60,7 @@ def correctSpacingX(cntA, cntB):
 	rawError = abs(eDist - rDist)
 	scaledError = rawError / eDist
 	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
-	print ("correctXSpacing: " + str(returnError))
+#	print ("correctXSpacing: " + str(returnError))
 	return (returnError)
 	
 def udpBroadcast (cntA, cntB):
@@ -85,8 +85,8 @@ def udpBroadcast (cntA, cntB):
 	 avgHeight = (avgHeight / capHeight)
 	 avgWidth = (avgWidth / capWidth)
 	 
-	 print("aspectRatio" + str (avgWidth / avgHeight))
-	 print("hello!!!!")
+#	 print("aspectRatio" + str (avgWidth / avgHeight))
+#	 print("hello!!!!")
 	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(realWidth)+',' + str(realHeight)))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
@@ -144,7 +144,8 @@ print ('pinging completed')
 
 cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x360&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
 
-#cap = cv2.VideoCapture(1)
+#cap = cv2.VideoCapture(0)
+
 print ('capture obtained')
 
 capWidth = cap.get(3)
@@ -183,7 +184,7 @@ while (True):
 
 	#This is inverted but it works on robot
 	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
-	cv2.imshow('mask', hsvMask)
+#	cv2.imshow('mask', hsvMask)
 
 #	odenoise = uptime()
 	
@@ -218,9 +219,9 @@ while (True):
 		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  50):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
-			print (str(w*h))
-	if (int(len(possibleTargetBoundingRect)) >= 1):
-		print (len(possibleTargetBoundingRect))
+#			print (str(w*h))
+	#if (int(len(possibleTargetBoundingRect)) >= 1):
+#		print (len(possibleTargetBoundingRect))
 
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
@@ -237,7 +238,7 @@ while (True):
 		for cntB in possibleTargetBoundingRect:
 			currentScore = correctSize(cntA, cntB) + correctSpacingX(cntA, cntB) + correctSpacingY(cntA, cntB)
 		
-			print ("Score: " + str(currentScore))	
+#			print ("Score: " + str(currentScore))	
 			if currentScore < highestScore:
 				bestFoundTarget [0] = cntA
 				bestFoundTarget [1] = cntB 
