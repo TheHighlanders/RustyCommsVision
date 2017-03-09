@@ -17,7 +17,7 @@ def aspectRatio(w, h):
 	return (w/h >= 1/5 and w/h <= 5.5/5)
 def percentFilled(w,h,cnt):
 	''' returns if the contour mostly occupies the same area as it's bounding rectangle atleast 70% '''
-	return (cv2.contourArea(cnt) >= 0.5 * w * h)
+	return (cv2.contourArea(cnt) >= 0.50* w * h)
 
 	#cntA and cntB are contour A and B
 def correctSize(cntA, cntB):
@@ -59,7 +59,7 @@ def correctSpacingX(cntA, cntB):
 	
 	rawError = abs(eDist - rDist)
 	scaledError = rawError / eDist
-	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 0.7)))) + 100*scaledError)
+	returnError = ((100 / (1 + math.e** (-20*(2*scaledError - 1.1)))) + 100*scaledError)
 #	print ("correctXSpacing: " + str(returnError))
 	return (returnError)
 	
@@ -108,7 +108,7 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
 	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
-	 cv2.imshow('Target\'s aquired', targetFrame)
+#	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 highestTargetScoreYet = 0;
 UDP_IP = '255.255.255.255' 
@@ -142,7 +142,7 @@ p = subprocess.Popen(['ping', '-c', '2', '10.62.1.11'])
 p.wait()
 print ('pinging completed')
 
-cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x360&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
+cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x360&compression=60&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
 
 #cap = cv2.VideoCapture(0)
 
@@ -179,7 +179,7 @@ while (True):
 
 ## update these for the green color of our LED
 	
-	lower_green = np.array([8,0,200])
+	lower_green = np.array([76,62,180])
 	upper_green = np.array([180,255,255])
 
 	#This is inverted but it works on robot
@@ -216,7 +216,7 @@ while (True):
 # if the contour looks like a possible piece of target tape, add it to the list
 	for cnt in hsvContours:
 		x, y, w, h = cv2.boundingRect(cnt)
-		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  50):
+		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  30):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
 #			print (str(w*h))
@@ -226,7 +226,7 @@ while (True):
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-	cv2.imshow("potential target half's", frameContours)
+#	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 

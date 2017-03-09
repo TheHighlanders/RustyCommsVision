@@ -1,7 +1,9 @@
+#! /usr/bin/python3
+
 import cv2
 import numpy as np
 
-cap = cv2.VideoCapture('http://02axis6201.local/mjpg/video.mjpg')
+cap = cv2.VideoCapture('http://10.62.1.12/mjpg/video.mjpg')
 
 
 def nothing(x):
