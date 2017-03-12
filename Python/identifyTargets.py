@@ -108,10 +108,10 @@ def drawTarget(rectangle1: list, rectangle2: list):
 	 cv2.rectangle(targetFrame, (rectangle2[0],rectangle2[1]),(rectangle2[0] + rectangle2[2], rectangle2[1] + rectangle1[3]), (255,0,0),-1) 
 	 cv2.circle(targetFrame, (int( targetX), int( targetY)), (10), (0,255,255), -1)
 
-#	 cv2.imshow('Target\'s aquired', targetFrame)
+	 cv2.imshow('Target\'s aquired', targetFrame)
 	 
 highestTargetScoreYet = 0;
-UDP_IP = '255.255.255.255' 
+UDP_IP = '10.62.01.2' 
 UDP_PORT = 5801
 
 socketout = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
@@ -226,7 +226,7 @@ while (True):
 ## Display the contours that might be targets.
 	frameContours = np.copy(frame)
 	cv2.drawContours(frameContours, possibleLiftTargetContour, -1, (0,0,255), 4)
-#	cv2.imshow("potential target half's", frameContours)
+	cv2.imshow("potential target half's", frameContours)
 
 # TODO: possibly update to rate the probability of each set of contours being a target, and then pick the best over a certian threshold. this would help in the case that there are two "targets" being picked up.
 
