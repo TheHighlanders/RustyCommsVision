@@ -19,7 +19,7 @@ case "$1" in
 
 		echo "starting vision"
 
-		./identifyTargets.py &
+		./identifyTargets.py
 	done
 	;;
   restart|reload|force-reload)
