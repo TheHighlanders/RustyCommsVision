@@ -142,7 +142,7 @@ p = subprocess.Popen(['ping', '-c', '2', '10.62.1.11'])
 p.wait()
 print ('pinging completed')
 
-cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x360&compression=60&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
+cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x480&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
 
 #cap = cv2.VideoCapture(0)
 
@@ -179,12 +179,12 @@ while (True):
 
 ## update these for the green color of our LED
 	
-	lower_green = np.array([76,62,180])
+	lower_green = np.array([67,116,160])
 	upper_green = np.array([180,255,255])
 
 	#This is inverted but it works on robot
 	hsvMask = cv2.inRange(hsvi, lower_green, upper_green)
-#	cv2.imshow('mask', hsvMask)
+	cv2.imshow('mask', hsvMask)
 
 #	odenoise = uptime()
 	
@@ -216,7 +216,7 @@ while (True):
 # if the contour looks like a possible piece of target tape, add it to the list
 	for cnt in hsvContours:
 		x, y, w, h = cv2.boundingRect(cnt)
-		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  30):
+		if (aspectRatio(w,h) and percentFilled(w,h,cnt) and w*h >=  25):
 			possibleLiftTargetContour.append(cnt)
 			possibleTargetBoundingRect.append([x,y,w,h])
 #			print (str(w*h))
