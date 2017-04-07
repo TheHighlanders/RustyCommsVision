@@ -88,6 +88,7 @@ def udpBroadcast (cntA, cntB):
 #	 print("aspectRatio" + str (avgWidth / avgHeight))
 #	 print("hello!!!!")
 	 bytes = bytes = str.encode((str(targetX)+ ','+str(targetY)+ ','+ str(realWidth)+',' + str(realHeight)))
+	 print("targetX:\t\t" + str(targetX))
 	 socketout.sendto(bytes,(UDP_IP,UDP_PORT)) 
 
 def drawTarget(rectangle1: list, rectangle2: list):
@@ -142,7 +143,7 @@ p = subprocess.Popen(['ping', '-c', '2', '10.62.1.11'])
 p.wait()
 print ('pinging completed')
 
-cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=640x480&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
+cap = cv2.VideoCapture("http://10.62.1.11/mjpg/video.mjpg?resolution=1024x576&compression=0&color=1&mirror=0&fps=30&videocodec=jpeg&rotation=0")
 
 #cap = cv2.VideoCapture(0)
 
@@ -179,7 +180,7 @@ while (True):
 
 ## update these for the green color of our LED
 	
-	lower_green = np.array([67,116,160])
+	lower_green = np.array([67,116,150])
 	upper_green = np.array([180,255,255])
 
 	#This is inverted but it works on robot
@@ -236,6 +237,7 @@ while (True):
 	
 	for cntA in possibleTargetBoundingRect:
 		for cntB in possibleTargetBoundingRect:
+			print ("XSpacing" + str (correctSpacingX(cntA, cntB)))
 			currentScore = correctSize(cntA, cntB) + correctSpacingX(cntA, cntB) + correctSpacingY(cntA, cntB)
 		
 #			print ("Score: " + str(currentScore))	
