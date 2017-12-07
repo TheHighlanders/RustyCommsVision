@@ -5,6 +5,7 @@ import numpy as np
 import math
 import time
 import subprocess
+
 #Created by Adriana Massie, David Matthews and Baxter Ellard
 
 
@@ -160,6 +161,8 @@ while (True):
 	try:
 
 		ret, frame = cap.read()
+		if (ret == false):
+			quit()
 	except Exception as e:
 		continue
 
