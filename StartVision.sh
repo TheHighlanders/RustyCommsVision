@@ -3,7 +3,7 @@
 
 case "$1" in
   start|"")
-	cd /home/frc6201/RustyCommsVision/Python/
+	cd /home/ubuntu/RustyCommsVision/Python/GRIP/
 	
 	res="1"
 #	echo "$res"
@@ -17,7 +17,7 @@ case "$1" in
 
 	echo "starting vision"
 
-	./identifyTargets.py &
+	./grip.py &
 	;;
   restart|reload|force-reload)
 	echo "Error: argument '$1' not supported" >&2s
