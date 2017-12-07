@@ -18,10 +18,16 @@ class GripPipeline:
 
         self.resize_image_output = None
 
-        self.__hsv_threshold_input = self.resize_image_output
-        self.__hsv_threshold_hue = [33.99280575539568, 103.5993208828523]
-        self.__hsv_threshold_saturation = [107.77877697841726, 255.0]
-        self.__hsv_threshold_value = [91.72661870503596, 255.0]
+        self.__blur_input = self.resize_image_output
+        self.__blur_type = BlurType.Box_Blur
+        self.__blur_radius = 1.8867924528301887
+
+        self.blur_output = None
+
+        self.__hsv_threshold_input = self.blur_output
+        self.__hsv_threshold_hue = [32.297890501158385, 92.42910811689484]
+        self.__hsv_threshold_saturation = [81.36634759988617, 254.88673855104778]
+        self.__hsv_threshold_value = [55.709669552493594, 255.0]
 
         self.hsv_threshold_output = None
 
@@ -54,8 +60,12 @@ class GripPipeline:
         self.__resize_image_input = source0
         (self.resize_image_output) = self.__resize_image(self.__resize_image_input, self.__resize_image_width, self.__resize_image_height, self.__resize_image_interpolation)
 
+        # Step Blur0:
+        self.__blur_input = self.resize_image_output
+        (self.blur_output) = self.__blur(self.__blur_input, self.__blur_type, self.__blur_radius)
+
         # Step HSV_Threshold0:
-        self.__hsv_threshold_input = self.resize_image_output
+        self.__hsv_threshold_input = self.blur_output
         (self.hsv_threshold_output) = self.__hsv_threshold(self.__hsv_threshold_input, self.__hsv_threshold_hue, self.__hsv_threshold_saturation, self.__hsv_threshold_value)
 
         # Step Find_Contours0:
@@ -79,6 +89,28 @@ class GripPipeline:
             A numpy.ndarray of the new size.
         """
         return cv2.resize(input, ((int)(width), (int)(height)), 0, 0, interpolation)
+
+    @staticmethod
+    def __blur(src, type, radius):
+        """Softens an image using one of several filters.
+        Args:
+            src: The source mat (numpy.ndarray).
+            type: The blurType to perform represented as an int.
+            radius: The radius for the blur as a float.
+        Returns:
+            A numpy.ndarray that has been blurred.
+        """
+        if(type is BlurType.Box_Blur):
+            ksize = int(2 * round(radius) + 1)
+            return cv2.blur(src, (ksize, ksize))
+        elif(type is BlurType.Gaussian_Blur):
+            ksize = int(6 * round(radius) + 1)
+            return cv2.GaussianBlur(src, (ksize, ksize), round(radius))
+        elif(type is BlurType.Median_Filter):
+            ksize = int(2 * round(radius) + 1)
+            return cv2.medianBlur(src, ksize)
+        else:
+            return cv2.bilateralFilter(src, -1, round(radius), round(radius))
 
     @staticmethod
     def __hsv_threshold(input, hue, sat, val):
@@ -157,4 +189,5 @@ class GripPipeline:
         return output
 
 
+BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filter')
 
